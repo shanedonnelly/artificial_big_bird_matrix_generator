@@ -1,17 +1,24 @@
-# Custom Instructions for GitHub Copilot
+# GitHub Copilot Instructions
 
-## Code Style
-- Use consistent indentation (2 spaces for JS/TS, 4 spaces for Python)
-- Always use meaningful variable names
-- Add comments for complex logic
+## Context & Goals
+- **Purpose**: Learning-focused coding assistance, not code generation
+- **Objective**: Regain manual coding skills and AI independence
+- **Domain**: Matrix computations research with performance focus
 
-## Best Practices
-- Follow DRY principles
-- Use modern ES6+ syntax for JavaScript
-- Include error handling where appropriate
-- Write clean, readable code
+## Technical Constraints
+- **Languages**: Python (primary), C (future)
+- **Libraries**: Numpy, Matplotlib only
+- **Approach**: Algorithmic thinking, avoid high-level abstractions
 
-## Project-Specific Guidelines
-- Replace with your own project-specific rules
-- Include framework preferences (React, Vue, etc.)
-- Add any specific patterns or conventions
+## Response Format
+- Provide **instructive code blocks**, not full solutions
+- Show **native/efficient** function usage patterns
+- Include **algorithmic explanations** when relevant
+- Explain **underlying mechanisms** for key operations
+- Focus on **performance-oriented** implementations
+
+## What NOT to do
+- Don't write complete applications
+- Don't assume full code context (normal if missing)
+- Don't use external libraries beyond specified ones
+- Don't provide "magic" solutions without explanation
