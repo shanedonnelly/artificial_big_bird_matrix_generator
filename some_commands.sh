@@ -1,0 +1,1 @@
+jupyter nbconvert --to html big_bird.ipynb
