@@ -2,35 +2,16 @@ import numpy as np
 import matplotlib.pyplot as plt
 import math
 
+## ALL REQUIRED CODE FROM NOTEBOOK
 
 def get_nb_non_zero(matrix):
     return np.count_nonzero(matrix)
 
-
-# In[3]:
-
-
 def get_density(matrix, length):
     return float(get_nb_non_zero(matrix)) / float(length * length)
 
-
-
 def get_sparsity(matrix, length):
     return 1.0 - get_density(matrix, length)
-
-
-
-def show_matrix_infos(matrix, length):
-    # conditions : shape(matrix) = (length, length)
-    sparsity = get_sparsity(matrix, length)
-    text = f"Given length : ({length}, {length}) and calculated length : {np.shape(matrix)} sparsity = {sparsity}"
-    plt.title(label=text)
-    plt.imshow(matrix, cmap='gray', interpolation='nearest')
-    plt.colorbar()
-    plt.show()
-
-
-
 
 def get_random_attention_mask(length, nz_per_row):
     # conditions : nz_per_row <= length
@@ -38,21 +19,14 @@ def get_random_attention_mask(length, nz_per_row):
     mask = rng.multivariate_hypergeometric([1]*length, nz_per_row, size=length).astype(bool)
     return mask
 
-
-
 def best_nz_per_row_from_sparsity(length, sparsity):
     # conditions : 0 <= sparsity <= 1
     return round(length * (1 - sparsity))
-
-
 
 def get_random_attention_mask_with_sparsity(length, sparsity):
     # conditions : 0 <= sparsity <= 1
     nz_per_row=best_nz_per_row_from_sparsity(length=length, sparsity=sparsity)
     return get_random_attention_mask( length=length, nz_per_row=nz_per_row)
-
-
-
 
 def diagonal_area(length,diagonal_width):
     # conditions : length
@@ -65,7 +39,6 @@ def diagonal_area(length,diagonal_width):
         da = n * ( 1 + 2 * sdw ) - sdw * (sdw + 1)
         return da
 
-
 def get_window_attention_mask (length, diagonal_width):
     # conditions : shape(matrix) = (length, length), 0 <= diagonal_width <= 2*length - 1 (cover full matrix), diagonal_width is odd
     mask = np.zeros(shape=(length, length), dtype=bool)
@@ -76,9 +49,6 @@ def get_window_attention_mask (length, diagonal_width):
         else : 
             mask = np.fromfunction(lambda i, j:  np.abs(i - j) <= sdw ,shape=(length, length), dtype=int)
     return mask
-
-
-
 
 def best_diagonal_width_from_sparsity(length, sparsity):
     n = length
@@ -101,12 +71,10 @@ def best_diagonal_width_from_sparsity(length, sparsity):
     # print(f"For matrix of size: {n} and given sparsity: {sparsity}, ideal semi diagonal width is : {x}, chosen dw is {dw}")
     return dw    
 
-
 def get_window_attention_mask_with_sparsity( length, sparsity):
     # conditions : 0 <= sparsity <= 1
     dw = best_diagonal_width_from_sparsity(length, sparsity)
     return get_window_attention_mask( length=length, diagonal_width=dw)
-
 
 def get_global_attention_mask( length, global_width):
     mask = np.zeros(shape=(length,length), dtype=bool)
@@ -114,13 +82,11 @@ def get_global_attention_mask( length, global_width):
     mask[global_width : , : global_width] = True
     return mask
 
-
 def generate_matrix_with_global_attention_mask(length, global_width):
     matrix = np.ones((length, length))
     mask = get_global_attention_mask( length=length, global_width=global_width)
     matrix[~mask] = 0
     return matrix
-
 
 def best_global_width_from_sparsity(length, sparsity):
     n = length
@@ -138,16 +104,12 @@ def best_global_width_from_sparsity(length, sparsity):
     elif(gw > n * n ): gw = n * n
     return gw 
 
-
 def get_global_attention_mask_with_sparsity( length, sparsity):
     # conditions : 0 <= sparsity <= 1
     gw = best_global_width_from_sparsity(length, sparsity)
     return get_global_attention_mask( length=length, global_width=gw)
 
-
-
 # ## BIG BIRD (combination of all above)
-
 
 def get_big_bird_mask(length, nz_per_row, diagonal_width, global_width):
     am = get_random_attention_mask( length= length, nz_per_row=nz_per_row)
@@ -156,16 +118,11 @@ def get_big_bird_mask(length, nz_per_row, diagonal_width, global_width):
     total_mask = am | wm | gm 
     return total_mask
 
-
-
-
 def generate_big_bird(length, nz_per_row, diagonal_width, global_width ):
     matrix = np.ones((length, length))
     mask = get_big_bird_mask( length=length, nz_per_row= nz_per_row, diagonal_width=diagonal_width, global_width= global_width)
     matrix[~mask] = 0
     return matrix
-
-
 
 def get_big_bird_mask_with_sparsity( length, random_sparsity, window_sparsity, global_sparsity):
     am = get_random_attention_mask_with_sparsity( length= length, sparsity=random_sparsity)
@@ -173,8 +130,6 @@ def get_big_bird_mask_with_sparsity( length, random_sparsity, window_sparsity, g
     gm = get_global_attention_mask_with_sparsity(length=length, sparsity=global_sparsity)
     total_mask = am | wm | gm 
     return total_mask
-
-
 
 def adjust_total_sparsity(total_sparsity):
     x = total_sparsity
@@ -195,8 +150,6 @@ def adjust_total_sparsity(total_sparsity):
     res = min(max(poly, 0.0), 1.0)
     return res
 
-
-
 def get_big_bird_mask_with_total_sparsity( length, total_sparsity, adjust):
     if adjust :
         total_sparsity = adjust_total_sparsity(total_sparsity)
@@ -206,14 +159,17 @@ def get_big_bird_mask_with_total_sparsity( length, total_sparsity, adjust):
     total_mask = get_big_bird_mask_with_sparsity( length, random_sparsity, window_sparsity, global_sparsity)
     return total_mask
 
-
-
-
 def generate_big_bird_with_total_sparsity(length,total_sparsity, adjust):
     matrix = np.ones((length, length))
     mask = get_big_bird_mask_with_total_sparsity(length, total_sparsity, adjust)
     matrix[~mask] = 0
     return matrix
+
+# END OF NOTEBOOK
+
+# Generated by AI
+
+from matplotlib.widgets import Slider
 
 def generate_test_matrices():
     """
@@ -238,7 +194,6 @@ def generate_test_matrices():
 
     return generated_data
 
-from matplotlib.widgets import Slider
 
 def interactive_final_test(matrix_data):
     """

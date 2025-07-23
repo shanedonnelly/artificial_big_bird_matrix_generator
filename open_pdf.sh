@@ -1,1 +1,0 @@
- firefox big_bird.html optimal_width_for_a_given_sparsity.pdf

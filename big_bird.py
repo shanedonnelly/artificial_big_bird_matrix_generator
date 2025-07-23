@@ -49,15 +49,16 @@ def get_sparsity(matrix, length):
     return 1.0 - get_density(matrix, length)
 
 
-# In[5]:
+# In[79]:
 
 
-def show_matrix_infos(matrix, length):
+def show_matrix_infos(matrix, length, given_sparsity = -1.0): # -1.0 correspond to None.
     # conditions : shape(matrix) = (length, length)
-    sparsity = get_sparsity(matrix, length)
-    text = f"Given length : ({length}, {length}) and calculated length : {np.shape(matrix)} sparsity = {sparsity}"
+    real_sparsity = get_sparsity(matrix, length)
+    given_text = "None" if given_sparsity < 0 else f"{given_sparsity:.2f}"
+    text = f"Length: {length}, Given Sparsity: {given_text}, Real Sparsity: {real_sparsity:.4f}"
     plt.title(label=text)
-    plt.imshow(matrix, cmap='gray', interpolation='nearest')
+    plt.imshow(matrix, cmap='gray', interpolation='nearest', vmin=0, vmax=1)
     plt.colorbar()
     plt.show()
 
@@ -66,7 +67,7 @@ def show_matrix_infos(matrix, length):
 
 # ### By number of non-zeros per row
 
-# In[6]:
+# In[69]:
 
 
 def get_random_attention_mask(length, nz_per_row):
@@ -76,7 +77,7 @@ def get_random_attention_mask(length, nz_per_row):
     return mask
 
 
-# In[7]:
+# In[68]:
 
 
 def generate_matrix_with_random_attention_mask(length, nz_per_row):
@@ -87,7 +88,7 @@ def generate_matrix_with_random_attention_mask(length, nz_per_row):
     return matrix
 
 
-# In[8]:
+# In[80]:
 
 
 def test_generate_matrix_with_random_attention_mask():
@@ -101,7 +102,7 @@ test_generate_matrix_with_random_attention_mask()
 
 # ### By sparsity
 
-# In[9]:
+# In[81]:
 
 
 def best_nz_per_row_from_sparsity(length, sparsity):
@@ -109,7 +110,7 @@ def best_nz_per_row_from_sparsity(length, sparsity):
     return round(length * (1 - sparsity))
 
 
-# In[10]:
+# In[82]:
 
 
 def get_random_attention_mask_with_sparsity(length, sparsity):
@@ -118,7 +119,7 @@ def get_random_attention_mask_with_sparsity(length, sparsity):
     return get_random_attention_mask( length=length, nz_per_row=nz_per_row)
 
 
-# In[11]:
+# In[83]:
 
 
 def generate_matrix_with_random_attention_mask_with_sparsity(length, sparsity):
@@ -129,14 +130,14 @@ def generate_matrix_with_random_attention_mask_with_sparsity(length, sparsity):
     return matrix
 
 
-# In[12]:
+# In[88]:
 
 
 def test_generate_matrix_with_random_attention_mask_with_sparsity():
     length = 10
     sparsity = 0.8
     matrix = generate_matrix_with_random_attention_mask_with_sparsity(length=length, sparsity=sparsity)
-    show_matrix_infos(matrix=matrix, length=length)
+    show_matrix_infos(matrix=matrix, length=length, given_sparsity=sparsity)
 
 test_generate_matrix_with_random_attention_mask_with_sparsity()
 
@@ -147,7 +148,7 @@ test_generate_matrix_with_random_attention_mask_with_sparsity()
 
 # ### Utils
 
-# In[13]:
+# In[89]:
 
 
 def diagonal_area(length,diagonal_width):
@@ -164,7 +165,7 @@ def diagonal_area(length,diagonal_width):
 
 # ### By diagonal width
 
-# In[14]:
+# In[90]:
 
 
 def get_window_attention_mask (length, diagonal_width):
@@ -180,7 +181,7 @@ def get_window_attention_mask (length, diagonal_width):
 
 
 
-# In[15]:
+# In[91]:
 
 
 def generate_matrix_with_window_attention_mask(length, diagonal_width):
@@ -191,7 +192,7 @@ def generate_matrix_with_window_attention_mask(length, diagonal_width):
     return matrix
 
 
-# In[16]:
+# In[92]:
 
 
 def test_generate_matrix_with_window_attention_mask():
@@ -267,7 +268,7 @@ def test_diagonal_width_from_sparsity():
 test_diagonal_width_from_sparsity()
 
 
-# In[20]:
+# In[93]:
 
 
 def get_window_attention_mask_with_sparsity( length, sparsity):
@@ -276,7 +277,7 @@ def get_window_attention_mask_with_sparsity( length, sparsity):
     return get_window_attention_mask( length=length, diagonal_width=dw)
 
 
-# In[21]:
+# In[94]:
 
 
 def generate_matrix_with_window_attention_mask_with_sparsity(length, sparsity):
@@ -287,14 +288,14 @@ def generate_matrix_with_window_attention_mask_with_sparsity(length, sparsity):
     return matrix
 
 
-# In[22]:
+# In[95]:
 
 
 def test_generate_matrix_with_window_attention_mask_with_sparsity():
     length = 100
     sparsity = 0.7
     matrix = generate_matrix_with_window_attention_mask_with_sparsity(length=length, sparsity=sparsity)
-    show_matrix_infos(matrix,length)
+    show_matrix_infos(matrix,length, sparsity)
 
 test_generate_matrix_with_window_attention_mask_with_sparsity()
 
@@ -334,7 +335,7 @@ def generate_matrix_with_global_attention_mask(length, global_width):
     return matrix
 
 
-# In[26]:
+# In[96]:
 
 
 def test_generate_matrix_with_global_attention_mask():
@@ -366,7 +367,7 @@ def best_global_width_from_sparsity(length, sparsity):
     return gw 
 
 
-# In[52]:
+# In[97]:
 
 
 def test_global_width_from_sparsity():
@@ -396,7 +397,7 @@ def test_global_width_from_sparsity():
     plt.show()
 
 
-# In[53]:
+# In[98]:
 
 
 # test function hided for render
@@ -422,14 +423,14 @@ def generate_matrix_with_global_attention_mask_with_sparsity(length, sparsity):
     return matrix
 
 
-# In[32]:
+# In[99]:
 
 
 def test_generate_matrix_with_global_attention_mask_with_sparsity():
     length = 100
     sparsity = 0.7
     matrix = generate_matrix_with_global_attention_mask_with_sparsity(length=length, sparsity=sparsity)
-    show_matrix_infos(matrix=matrix, length=length)
+    show_matrix_infos(matrix=matrix, length=length, given_sparsity= sparsity)
 
 test_generate_matrix_with_global_attention_mask_with_sparsity()
 
@@ -457,7 +458,7 @@ def generate_big_bird(length, nz_per_row, diagonal_width, global_width ):
     return matrix
 
 
-# In[35]:
+# In[100]:
 
 
 def test_generate_big_bird():
@@ -469,7 +470,6 @@ def test_generate_big_bird():
     show_matrix_infos(matrix=matrix, length= length)
 
 test_generate_big_bird()
-
 
 
 # In[36]:
@@ -493,14 +493,14 @@ def generate_big_bird_with_sparsity(length, random_sparsity, window_sparsity, gl
     return matrix
 
 
-# In[38]:
+# In[101]:
 
 
 def test_generate_big_bird_with_sparsity():
     length = 100
-    random_sparsity =  0.9
-    window_sparsity = 0.9
-    global_sparsity = 0.9
+    random_sparsity =  0.8
+    window_sparsity = 0.8
+    global_sparsity = 0.8
     matrix = generate_big_bird_with_sparsity(length=length,random_sparsity=random_sparsity, window_sparsity=window_sparsity, global_sparsity=global_sparsity)
     show_matrix_infos(matrix=matrix, length= length)
 
@@ -553,7 +553,7 @@ def generate_big_bird_with_total_sparsity(length,total_sparsity, adjust):
     return matrix
 
 
-# In[ ]:
+# In[103]:
 
 
 def find_approximation():
@@ -586,7 +586,7 @@ def find_approximation():
 find_approximation()
 
 
-# In[43]:
+# In[104]:
 
 
 def test_generate_big_bird_with_total_sparsity():
@@ -639,116 +639,4 @@ print("Without adjusting :")
 test_adjust_total_sparsity(False)
 print("When adjusting the given sparsity : ")
 test_adjust_total_sparsity(True)
-
-
-# In[ ]:
-
-
-def generate_test_matrices():
-    """
-    Generates a list of matrices with varying lengths and sparsities.
-    Uses the adjusted sparsity function for accurate results.
-    """
-    # Define the parameters for generation
-    lengths = [10, 50, 100, 250, 500, 1000]
-    sparsity_values = [x / 100.0 for x in range(0, 101, 5)]
-
-    generated_data = []
-
-    # Loop through each combination and generate the matrix
-    for length in lengths:
-        for sparsity in sparsity_values:
-            # Generate the matrix with adjust=True for better accuracy
-            matrix = generate_big_bird_with_total_sparsity(length, sparsity, adjust=True)
-            generated_data.append((matrix, length, sparsity))
-
-    return generated_data
-
-
-# In[60]:
-
-
-preloaded_data = generate_test_matrices()
-print(f"Generated and preloaded {len(preloaded_data)} matrices into memory.")
-
-
-# In[61]:
-
-
-from matplotlib.widgets import Slider
-
-def interactive_final_test(matrix_data):
-    """
-    Creates an interactive matplotlib plot to visualize the preloaded matrices.
-    Uses sliders to select length and sparsity.
-    """
-    # Restructure data for quick O(1) access: {length: {sparsity: matrix}}
-    data_map = {}
-    for matrix, length, sparsity in matrix_data:
-        if length not in data_map:
-            data_map[length] = {}
-        # Use a key like '0.75' for the dictionary
-        data_map[length][f'{sparsity:.2f}'] = matrix
-
-    lengths = sorted(data_map.keys())
-    sparsities = sorted([float(s) for s in data_map[lengths[0]].keys()])
-
-    # --- Initial Setup ---
-    fig, ax = plt.subplots(figsize=(7, 8))
-    plt.subplots_adjust(bottom=0.25) # Make space for sliders
-
-    initial_length = lengths[0]
-    initial_sparsity = sparsities[0]
-    initial_matrix = data_map[initial_length][f'{initial_sparsity:.2f}']
-
-    # Display the initial matrix
-    img = ax.imshow(initial_matrix, cmap='gray', interpolation='nearest')
-    fig.colorbar(img, ax=ax)
-
-    # --- Sliders ---
-    ax_length = plt.axes([0.25, 0.1, 0.65, 0.03])
-    ax_sparsity = plt.axes([0.25, 0.05, 0.65, 0.03])
-
-    # Slider for length (uses indices to handle non-uniform steps)
-    s_length = Slider(ax_length, 'Length', 0, len(lengths) - 1, valinit=0, valstep=1)
-    s_length.valtext.set_text(lengths[0]) # Display actual length value
-
-    # Slider for sparsity
-    s_sparsity = Slider(ax_sparsity, 'Sparsity', sparsities[0], sparsities[-1], valinit=initial_sparsity, valstep=0.05)
-
-    # --- Update Function ---
-    def update(val):
-        # Get current values from sliders
-        length_idx = int(s_length.val)
-        current_length = lengths[length_idx]
-        s_length.valtext.set_text(current_length) # Update slider text
-
-        # Find the closest sparsity value available
-        current_sparsity_val = min(sparsities, key=lambda x: abs(x - s_sparsity.val))
-
-        # Retrieve the corresponding matrix
-        matrix = data_map[current_length][f'{current_sparsity_val:.2f}']
-
-        # Update plot data and title
-        img.set_data(matrix)
-        real_sparsity = get_sparsity(matrix, current_length)
-        ax.set_title(f"Length: {current_length}, Given Sparsity: {current_sparsity_val:.2f}, Real Sparsity: {real_sparsity:.4f}")
-
-        fig.canvas.draw_idle()
-
-    # Register the update function to be called on slider change
-    s_length.on_changed(update)
-    s_sparsity.on_changed(update)
-
-    # Trigger initial title update
-    update(None)
-
-    plt.show()
-
-
-# In[63]:
-
-
-# Run the interactive test with the preloaded data
-interactive_final_test(preloaded_data)
 
