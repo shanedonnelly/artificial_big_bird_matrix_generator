@@ -7,51 +7,51 @@ import math
 def get_nb_non_zero(matrix):
     return np.count_nonzero(matrix)
 
-def get_density(matrix, length):
-    return float(get_nb_non_zero(matrix)) / float(length * length)
+def get_density(matrix, size):
+    return float(get_nb_non_zero(matrix)) / float(size * size)
 
-def get_sparsity(matrix, length):
-    return 1.0 - get_density(matrix, length)
+def get_sparsity(matrix, size):
+    return 1.0 - get_density(matrix, size)
 
-def get_random_attention_mask(length, nz_per_row):
-    # conditions : nz_per_row <= length
-    rng = np.random.default_rng()
-    mask = rng.multivariate_hypergeometric([1]*length, nz_per_row, size=length).astype(bool)
+def get_random_attention_mask(size, nz_per_row):
+    # conditions : nz_per_row <= size
+    rng = np.random.default_rng(121263137472525314065)
+    mask = rng.multivariate_hypergeometric([1]*size, nz_per_row, size=size).astype(bool)
     return mask
 
-def best_nz_per_row_from_sparsity(length, sparsity):
+def best_nz_per_row_from_sparsity(size, sparsity):
     # conditions : 0 <= sparsity <= 1
-    return round(length * (1 - sparsity))
+    return round(size * (1 - sparsity))
 
-def get_random_attention_mask_with_sparsity(length, sparsity):
+def get_random_attention_mask_with_sparsity(size, sparsity):
     # conditions : 0 <= sparsity <= 1
-    nz_per_row=best_nz_per_row_from_sparsity(length=length, sparsity=sparsity)
-    return get_random_attention_mask( length=length, nz_per_row=nz_per_row)
+    nz_per_row=best_nz_per_row_from_sparsity(size=size, sparsity=sparsity)
+    return get_random_attention_mask( size=size, nz_per_row=nz_per_row)
 
-def diagonal_area(length,diagonal_width):
-    # conditions : length
+def diagonal_area(size,diagonal_width):
+    # conditions : size
     if(diagonal_width == 0):
         return 0
     else:
-        n = length
+        n = size
         #semi diagonal widht
         sdw = diagonal_width // 2 # (diagonal_width / 2 - 1 because is odd)
         da = n * ( 1 + 2 * sdw ) - sdw * (sdw + 1)
         return da
 
-def get_window_attention_mask (length, diagonal_width):
-    # conditions : shape(matrix) = (length, length), 0 <= diagonal_width <= 2*length - 1 (cover full matrix), diagonal_width is odd
-    mask = np.zeros(shape=(length, length), dtype=bool)
+def get_window_attention_mask (size, diagonal_width):
+    # conditions : shape(matrix) = (size, size), 0 <= diagonal_width <= 2*size - 1 (cover full matrix), diagonal_width is odd
+    mask = np.zeros(shape=(size, size), dtype=bool)
     if (diagonal_width > 0):
         sdw = diagonal_width // 2
         if diagonal_width == 1:
-            mask = np.fromfunction(lambda i, j:  j == i,shape=(length, length), dtype=int)
+            mask = np.fromfunction(lambda i, j:  j == i,shape=(size, size), dtype=int)
         else : 
-            mask = np.fromfunction(lambda i, j:  np.abs(i - j) <= sdw ,shape=(length, length), dtype=int)
+            mask = np.fromfunction(lambda i, j:  np.abs(i - j) <= sdw ,shape=(size, size), dtype=int)
     return mask
 
-def best_diagonal_width_from_sparsity(length, sparsity):
-    n = length
+def best_diagonal_width_from_sparsity(size, sparsity):
+    n = size
     density = 1.0 - sparsity
      # ideal diagonal aera
     da = n * n * density
@@ -71,25 +71,25 @@ def best_diagonal_width_from_sparsity(length, sparsity):
     # print(f"For matrix of size: {n} and given sparsity: {sparsity}, ideal semi diagonal width is : {x}, chosen dw is {dw}")
     return dw    
 
-def get_window_attention_mask_with_sparsity( length, sparsity):
+def get_window_attention_mask_with_sparsity( size, sparsity):
     # conditions : 0 <= sparsity <= 1
-    dw = best_diagonal_width_from_sparsity(length, sparsity)
-    return get_window_attention_mask( length=length, diagonal_width=dw)
+    dw = best_diagonal_width_from_sparsity(size, sparsity)
+    return get_window_attention_mask( size=size, diagonal_width=dw)
 
-def get_global_attention_mask( length, global_width):
-    mask = np.zeros(shape=(length,length), dtype=bool)
+def get_global_attention_mask( size, global_width):
+    mask = np.zeros(shape=(size,size), dtype=bool)
     mask[:global_width,:] = True
     mask[global_width : , : global_width] = True
     return mask
 
-def generate_matrix_with_global_attention_mask(length, global_width):
-    matrix = np.ones((length, length))
-    mask = get_global_attention_mask( length=length, global_width=global_width)
+def generate_matrix_with_global_attention_mask(size, global_width):
+    matrix = np.ones((size, size))
+    mask = get_global_attention_mask( size=size, global_width=global_width)
     matrix[~mask] = 0
     return matrix
 
-def best_global_width_from_sparsity(length, sparsity):
-    n = length
+def best_global_width_from_sparsity(size, sparsity):
+    n = size
     density = 1.0 - sparsity
      # ideal diagonal aera
     ga = n * n * density
@@ -104,30 +104,30 @@ def best_global_width_from_sparsity(length, sparsity):
     elif(gw > n * n ): gw = n * n
     return gw 
 
-def get_global_attention_mask_with_sparsity( length, sparsity):
+def get_global_attention_mask_with_sparsity( size, sparsity):
     # conditions : 0 <= sparsity <= 1
-    gw = best_global_width_from_sparsity(length, sparsity)
-    return get_global_attention_mask( length=length, global_width=gw)
+    gw = best_global_width_from_sparsity(size, sparsity)
+    return get_global_attention_mask( size=size, global_width=gw)
 
 # ## BIG BIRD (combination of all above)
 
-def get_big_bird_mask(length, nz_per_row, diagonal_width, global_width):
-    am = get_random_attention_mask( length= length, nz_per_row=nz_per_row)
-    wm = get_window_attention_mask( length= length, diagonal_width=diagonal_width)
-    gm = get_global_attention_mask( length=length, global_width= global_width)
+def get_big_bird_mask(size, nz_per_row, diagonal_width, global_width):
+    am = get_random_attention_mask( size= size, nz_per_row=nz_per_row)
+    wm = get_window_attention_mask( size= size, diagonal_width=diagonal_width)
+    gm = get_global_attention_mask( size=size, global_width= global_width)
     total_mask = am | wm | gm 
     return total_mask
 
-def generate_big_bird(length, nz_per_row, diagonal_width, global_width ):
-    matrix = np.ones((length, length))
-    mask = get_big_bird_mask( length=length, nz_per_row= nz_per_row, diagonal_width=diagonal_width, global_width= global_width)
+def generate_big_bird(size, nz_per_row, diagonal_width, global_width ):
+    matrix = np.ones((size, size))
+    mask = get_big_bird_mask( size=size, nz_per_row= nz_per_row, diagonal_width=diagonal_width, global_width= global_width)
     matrix[~mask] = 0
     return matrix
 
-def get_big_bird_mask_with_sparsity( length, random_sparsity, window_sparsity, global_sparsity):
-    am = get_random_attention_mask_with_sparsity( length= length, sparsity=random_sparsity)
-    wm = get_window_attention_mask_with_sparsity( length= length,sparsity=window_sparsity )
-    gm = get_global_attention_mask_with_sparsity(length=length, sparsity=global_sparsity)
+def get_big_bird_mask_with_sparsity( size, random_sparsity, window_sparsity, global_sparsity):
+    am = get_random_attention_mask_with_sparsity( size= size, sparsity=random_sparsity)
+    wm = get_window_attention_mask_with_sparsity( size= size,sparsity=window_sparsity )
+    gm = get_global_attention_mask_with_sparsity(size=size, sparsity=global_sparsity)
     total_mask = am | wm | gm 
     return total_mask
 
@@ -150,18 +150,18 @@ def adjust_total_sparsity(total_sparsity):
     res = min(max(poly, 0.0), 1.0)
     return res
 
-def get_big_bird_mask_with_total_sparsity( length, total_sparsity, adjust):
+def get_big_bird_mask_with_total_sparsity( size, total_sparsity, adjust):
     if adjust :
         total_sparsity = adjust_total_sparsity(total_sparsity)
     random_sparsity = total_sparsity
     window_sparsity = total_sparsity
     global_sparsity = total_sparsity
-    total_mask = get_big_bird_mask_with_sparsity( length, random_sparsity, window_sparsity, global_sparsity)
+    total_mask = get_big_bird_mask_with_sparsity( size, random_sparsity, window_sparsity, global_sparsity)
     return total_mask
 
-def generate_big_bird_with_total_sparsity(length,total_sparsity, adjust):
-    matrix = np.ones((length, length))
-    mask = get_big_bird_mask_with_total_sparsity(length, total_sparsity, adjust)
+def generate_big_bird_with_total_sparsity(size,total_sparsity, adjust):
+    matrix = np.ones((size, size))
+    mask = get_big_bird_mask_with_total_sparsity(size, total_sparsity, adjust)
     matrix[~mask] = 0
     return matrix
 
@@ -173,24 +173,24 @@ from matplotlib.widgets import Slider
 
 def generate_test_matrices():
     """
-    Generates a list of matrices with varying lengths and sparsities.
+    Generates a list of matrices with varying sizes and sparsities.
     Uses the adjusted sparsity function for accurate results.
     """
     # Define the parameters for generation
-    lengths = [10, 50, 100, 250, 500, 1000]
+    sizes = [10, 25, 50, 100, 250, 500, 1000]
     sparsity_values = [x / 100.0 for x in range(0, 101, 5)]
 
     generated_data = []
 
     # Loop through each combination and generate the matrix
-    for length in lengths:
+    for size in sizes:
         for sparsity in sparsity_values:
             # Generate the matrix with adjust=True for better accuracy
-            matrix = generate_big_bird_with_total_sparsity(length, sparsity, adjust=True)
+            matrix = generate_big_bird_with_total_sparsity(size, sparsity, adjust=True)
             # Pre-calculate the real sparsity
-            real_sparsity = get_sparsity(matrix, length)
-            # Store matrix, length, given sparsity, and real sparsity
-            generated_data.append((matrix, length, sparsity, real_sparsity))
+            real_sparsity = get_sparsity(matrix, size)
+            # Store matrix, size, given sparsity, and real sparsity
+            generated_data.append((matrix, size, sparsity, real_sparsity))
 
     return generated_data
 
@@ -198,38 +198,38 @@ def generate_test_matrices():
 def interactive_final_test(matrix_data):
     """
     Creates an interactive matplotlib plot to visualize the preloaded matrices.
-    Uses sliders to select length and sparsity.
+    Uses sliders to select size and sparsity.
     """
-    # Restructure data for quick O(1) access: {length: {sparsity: (matrix, real_sparsity)}}
+    # Restructure data for quick O(1) access: {size: {sparsity: (matrix, real_sparsity)}}
     data_map = {}
-    for matrix, length, given_sparsity, real_sparsity in matrix_data:
-        if length not in data_map:
-            data_map[length] = {}
+    for matrix, size, given_sparsity, real_sparsity in matrix_data:
+        if size not in data_map:
+            data_map[size] = {}
         # Store both the matrix and its pre-calculated real sparsity
-        data_map[length][f'{given_sparsity:.2f}'] = (matrix, real_sparsity)
+        data_map[size][f'{given_sparsity:.2f}'] = (matrix, real_sparsity)
 
-    lengths = sorted(data_map.keys())
-    sparsities = sorted([float(s) for s in data_map[lengths[0]].keys()])
+    sizes = sorted(data_map.keys())
+    sparsities = sorted([float(s) for s in data_map[sizes[0]].keys()])
 
     # --- Initial Setup ---
     fig, ax = plt.subplots(figsize=(7, 8))
     plt.subplots_adjust(bottom=0.25) # Make space for sliders
 
-    initial_length = lengths[0]
+    initial_size = sizes[0]
     initial_sparsity = sparsities[0]
-    initial_matrix, _ = data_map[initial_length][f'{initial_sparsity:.2f}']
+    initial_matrix, _ = data_map[initial_size][f'{initial_sparsity:.2f}']
 
     # Display the initial matrix with black & white colormap and fixed 0-1 range
     img = ax.imshow(initial_matrix, cmap='gray', interpolation='nearest', vmin=0, vmax=1)
     fig.colorbar(img, ax=ax)
 
     # --- Sliders ---
-    ax_length = plt.axes([0.25, 0.1, 0.65, 0.03])
+    ax_size = plt.axes([0.25, 0.1, 0.65, 0.03])
     ax_sparsity = plt.axes([0.25, 0.05, 0.65, 0.03])
 
-    # Slider for length (uses indices to handle non-uniform steps)
-    s_length = Slider(ax_length, 'Length', 0, len(lengths) - 1, valinit=0, valstep=1)
-    s_length.valtext.set_text(lengths[0]) # Display actual length value
+    # Slider for size (uses indices to handle non-uniform steps)
+    s_size = Slider(ax_size, 'size', 0, len(sizes) - 1, valinit=0, valstep=1)
+    s_size.valtext.set_text(sizes[0]) # Display actual size value
 
     # Slider for sparsity
     s_sparsity = Slider(ax_sparsity, 'Sparsity', sparsities[0], sparsities[-1], valinit=initial_sparsity, valstep=0.05)
@@ -237,24 +237,24 @@ def interactive_final_test(matrix_data):
     # --- Update Function ---
     def update(val):
         # Get current values from sliders
-        length_idx = int(s_length.val)
-        current_length = lengths[length_idx]
-        s_length.valtext.set_text(current_length) # Update slider text
+        size_idx = int(s_size.val)
+        current_size = sizes[size_idx]
+        s_size.valtext.set_text(current_size) # Update slider text
 
         # Find the closest sparsity value available
         current_sparsity_val = min(sparsities, key=lambda x: abs(x - s_sparsity.val))
 
         # Retrieve the matrix and its pre-calculated real sparsity by unpacking the tuple
-        matrix, real_sparsity = data_map[current_length][f'{current_sparsity_val:.2f}']
+        matrix, real_sparsity = data_map[current_size][f'{current_sparsity_val:.2f}']
 
         # Update plot data and title
         img.set_data(matrix)
-        ax.set_title(f"Length: {current_length}, Given Sparsity: {current_sparsity_val:.2f}, Real Sparsity: {real_sparsity:.4f}")
+        ax.set_title(f"size: {current_size}, Given Sparsity: {current_sparsity_val:.2f}, Real Sparsity: {real_sparsity:.4f}")
 
         fig.canvas.draw_idle()
 
     # Register the update function to be called on slider change
-    s_length.on_changed(update)
+    s_size.on_changed(update)
     s_sparsity.on_changed(update)
 
     # Trigger initial title update
