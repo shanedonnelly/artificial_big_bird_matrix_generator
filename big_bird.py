@@ -139,12 +139,12 @@ def generate_matrix_with_random_attention_mask_with_sparsity(size, sparsity):
     return matrix
 
 
-# In[183]:
+# In[194]:
 
 
 def test_generate_matrix_with_random_attention_mask_with_sparsity():
     size = 10
-    sparsity = 0.8
+    sparsity = 0.75
     matrix = generate_matrix_with_random_attention_mask_with_sparsity(size=size, sparsity=sparsity)
     show_matrix_infos(matrix=matrix, size=size, given_sparsity=sparsity)
 
