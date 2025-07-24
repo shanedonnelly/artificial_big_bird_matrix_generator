@@ -46,13 +46,13 @@ int* init_matrix_int( int length, int value ){
     return res ; 
 }
 
-void print_matrix_bool(bool* matrix, int length){
+void print_matrix_bool(bool* bmask, int length){
     int row, columns;
     for (row=0; row<length; row++)
     {
         for(columns=0; columns<length; columns++)
         {
-            if (matrix[row * length + columns]){
+            if (bmask[row * length + columns]){
                 printf("T " );
             }
             else {
@@ -77,13 +77,13 @@ bool* init_matrix_bool( int length, bool value ){
     return res ; 
 }
 
-void set_boolean_mask_from_range(bool* matrix, int length, int xmin, int xmax, int ymin, int ymax, bool value){
+void set_boolean_mask_from_range(bool* bmask, int length, int ymin, int ymax, int xmin, int xmax, bool value){
     int row, columns;
-    for (row=ymin; row<=ymax; row++)
+    for (row=ymin; row< ymax; row++)
     {
-        for(columns=xmin; columns<=xmax; columns++)
+        for(columns=xmin; columns<xmax; columns++)
         {
-         matrix[row * length + columns] = value;
+         bmask[row * length + columns] = value;
         }
     }
 }
@@ -128,6 +128,8 @@ int* get_unique_random_number(int count, int min, int max) {
 
 // ACTUAL FUNCTIONS
 
+// RANDOM ATTENTION MASK
+
 bool* get_random_attention_mask(int length, int nz_per_row){
     bool* res = init_matrix_bool(length, false);
     int* unique_random_number ; 
@@ -154,6 +156,8 @@ bool* get_random_attention_mask_with_sparsity(int length, double sparsity){
     int nz_per_row = best_nz_per_row_from_sparsity(length, sparsity); 
     return get_random_attention_mask(length, nz_per_row); 
 }
+
+// WINDOW ATTENTION
 
 bool* get_window_attention_mask(int length, int diagonal_width){
     bool* res = init_matrix_bool(length, false);
@@ -198,15 +202,26 @@ bool* get_window_attention_mask_with_sparsity(int length, double sparsity){
     return get_window_attention_mask( length, dw);
 }
 
+// GLOBAL ATTENTION
 
-
+bool* get_global_attention_mask( int length, int global_width){
+    bool* res = init_matrix_bool(length, false) ; 
+    set_boolean_mask_from_range(res, length, 0 , global_width, 0, length, true);
+    set_boolean_mask_from_range(res, length, global_width , length , 0, global_width, true);
+    return res ; 
+}
 
 // TEST
 
 void test_3(){
+    // int length = 10;
+    // double sparsity = 1.0 ; 
+    // bool* bmask = get_window_attention_mask_with_sparsity(length, sparsity); 
+    // print_matrix_bool(bmask, length); 
+    // free(bmask); 
     int length = 10;
-    double sparsity = 1.0 ; 
-    bool* bmask = get_window_attention_mask_with_sparsity(length, sparsity); 
+    int  global_width = 3 ;  
+    bool* bmask = get_global_attention_mask(length, global_width); 
     print_matrix_bool(bmask, length); 
     free(bmask); 
 }
