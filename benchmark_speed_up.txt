@@ -1,13 +1,26 @@
-this was run without desktop gui, wifi ... 
+values : 
+sparsity = {0.0, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95, 1.0};
+size = {10, 50, 100, 250, 500, 1000, 2000};
+
+this was run without desktop gui, wifi ...
+
 # sequential
 real 1,83
 user 1,66
 sys 0,16
 
-# parallel version
+# parallel version (8 threads)
 NUMBER OF THREADS : 8 
 real 0,59
 user 4,46
 sys 0,30
 
 SPEED UP ≈ 3. 
+
+# parallel version (4 threads)
+NUMBER OF THREADS : 4 
+real 0,72
+user 2,67
+sys 0,23
+
+SPEED UP ≈ 2.5
