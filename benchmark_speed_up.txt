@@ -1,0 +1,13 @@
+this was run without desktop gui, wifi ... 
+# sequential
+real 1,83
+user 1,66
+sys 0,16
+
+# parallel version
+NUMBER OF THREADS : 8 
+real 0,59
+user 4,46
+sys 0,30
+
+SPEED UP ≈ 3. 
