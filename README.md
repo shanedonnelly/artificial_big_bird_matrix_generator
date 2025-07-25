@@ -12,18 +12,18 @@ The `artificial_big_bird_matrix_generator` generates matrices like BigBird (d).
 
 ## The repository
 
-`benchmark_speed_up.txt` : A comparaison of: `big_bird.c` vs `big_bird_parallel.c`
-`big_bird.c` : The generator, first written in Python/Numpy, then ported to C.
-`big_bird.html` : HTML version of the jupyter notebook
-`big_bird.ipynb` : Jupyter notebook (main file)
-`big_bird.pdf` : PDF version of the jupyter notebook
-`big_bird_parallel.c` : Parallel version of big_bird.c with OpenMP.
-`deps.py` : Side project, scan python file to determine function depencies for a specific function.
-`interactive_app.py` : An interactive app to visualize matrices generated
-`Makefile` : The Makefile.
-`optimal_width_for_a_given_sparsity.pdf` : Latex proof of one formula I used. 
-`previous_work_paper_big_bird.pdf` : Paper about BigBird, by Google.
-`README.md` : This file.
-`requirements.txt` : Python requirements.
-`all .png` : Image assets for the notebook and README.
+- `benchmark_speed_up.txt` : A comparison of `big_bird.c` vs `big_bird_parallel.c`.
+- `big_bird.c` : The generator, first written in Python/Numpy, then ported to C.
+- `big_bird.html` : HTML version of the Jupyter notebook.
+- `big_bird.ipynb` : Jupyter notebook (main file).
+- `big_bird.pdf` : PDF version of the Jupyter notebook.
+- `big_bird_parallel.c` : Parallel version of `big_bird.c` with OpenMP.
+- `deps.py` : Side project that scans Python files to determine function dependencies for a specific function.
+- `interactive_app.py` : An interactive app to visualize the generated matrices.
+- `Makefile` : The Makefile.
+- `optimal_width_for_a_given_sparsity.pdf` : LaTeX proof of one formula I used.
+- `previous_work_paper_big_bird.pdf` : Paper about BigBird by Google.
+- `README.md` : This file.
+- `requirements.txt` : Python requirements.
+- `*.png` : Image assets for the notebook and README.
 
