@@ -1,7 +1,7 @@
 // OpenMP program to print Hello World
 // using C language
 
-//#include <omp.h>
+#include <omp.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -37,6 +37,7 @@ void print_matrix_int(int* matrix, int size){
 int* init_matrix_int( int size, int value ){
     int* res = (int *)malloc(sizeof(int) * size * size) ; 
     int row, columns;
+    #pragma omp parallel for private(row, columns)collapse(2)
     for (row=0; row<size; row++)
     {
         for(columns=0; columns<size; columns++)
@@ -68,6 +69,7 @@ void print_matrix_bool(bool* bmask, int size){
 bool* init_matrix_bool( int size, bool value ){
     bool* res = (bool *)malloc(sizeof(bool) * size * size) ; 
     int row, columns;
+    #pragma omp parallel for private(row, columns)collapse(2)
     for (row=0; row<size; row++)
     {
         for(columns=0; columns<size; columns++)
@@ -80,6 +82,7 @@ bool* init_matrix_bool( int size, bool value ){
 
 void set_boolean_mask_from_range(bool* bmask, int size, int ymin, int ymax, int xmin, int xmax, bool value){
     int row, columns;
+    #pragma omp parallel for private(row, columns)collapse(2)
     for (row=ymin; row< ymax; row++)
     {
         for(columns=xmin; columns<xmax; columns++)
@@ -91,6 +94,7 @@ void set_boolean_mask_from_range(bool* bmask, int size, int ymin, int ymax, int 
 
 void apply_boolean_mask(int* matrix, bool* b_mask, int size){
     int row, columns;
+    #pragma omp parallel for private(row, columns)collapse(2)
     for (row=0; row<size; row++)
     {
         for(columns=0; columns<size; columns++)
@@ -132,9 +136,10 @@ int* get_unique_random_number(int count, int min, int max, unsigned int *seedp) 
 bool* get_random_attention_mask(int size, int nz_per_row){
     bool* res = init_matrix_bool(size, false);
     int row;
+    #pragma omp parallel for private(row)
     for (row=0; row < size; row++)
     {
-        unsigned int seed = row; // Each thread/row gets a different seed
+        unsigned int seed = omp_get_thread_num() + row; // Each thread/row gets a different seed
         int* unique_random_number = get_unique_random_number(nz_per_row, 0, size, &seed);
         for(int columns = 0; columns < nz_per_row; columns++)
         {
@@ -163,6 +168,7 @@ bool* get_window_attention_mask(int size, int diagonal_width){
     int row, columns;
     if(diagonal_width > 0){
         int sdw = diagonal_width / 2 ; 
+        #pragma omp parallel for private(row, columns)
         for (row=0; row < size; row++)
         {
             int min_c = max(0, row - sdw ); 
@@ -173,7 +179,7 @@ bool* get_window_attention_mask(int size, int diagonal_width){
             }
         }
     }
-    return res ; 
+    return res ;
 }
 
 int best_diagonal_width_from_sparsity(int size, double sparsity){
@@ -235,6 +241,7 @@ bool* get_global_attention_mask_with_sparsity(int size, double sparsity){
 bool* combine_all_mask(int size, bool* random_mask, bool* window_mask, bool* global_mask){
     bool* res = (bool *)malloc(sizeof(bool) * size * size) ; 
     int row, columns;
+    #pragma omp parallel for private(row, columns)
     for (row=0; row<size; row++)
     {
         for(columns=0; columns<size; columns++)
@@ -336,5 +343,10 @@ void test2(){
 int main(int argc, char* argv[])
 {
     srand(39935753);
-    test2() ;
+    #pragma omp parallel
+    {
+        # pragma omp master
+        printf("NUMBER OF THREADS : %d \n \n", omp_get_num_threads());
+    }
+    test2();
 }

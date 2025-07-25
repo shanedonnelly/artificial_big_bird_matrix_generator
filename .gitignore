@@ -2,7 +2,7 @@
 artificial-matrix-generator/
 *.sh
 big_bird
-test
+big_bird_parallel
 # C project gitignore from matrix generator gitignore : 
 
 # Prerequisites
